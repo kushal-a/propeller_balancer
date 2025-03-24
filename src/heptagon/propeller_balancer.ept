@@ -1,0 +1,230 @@
+open Mc_ext
+
+(* CONSTANTS *)
+
+	(* universal constants *)
+	const frequency: int = 50
+	const g: float = 9.8
+
+	(* robot constants *)
+	const h: float = 90.0	-- mm    SI/1000
+	const l: float = 348.0   -- mm   SI/1000
+	const mass: float = 1.05   -- g  
+	const inertia: float = 13500.0    -- gm^2  SI/1000
+
+
+	const pwmMax: int = 100
+	const vMax: int = 100
+	
+
+	(* sensing constants *)
+	const sensor_min : int = 214
+	const sensor_max : int = 955
+
+
+	(* compute constants *)
+	const kp: float = 0.12
+	const kd: float = 0.0
+
+	const kappa: float = 0.7 -- fraction of weight to be considered as max lift
+	const alpha_sat: float = 0.7  -- fraction of limit to start exponential saturation
+
+	(* actuation constants *)
+	const motor_min : int^2 = [24, 22]  -- [L,R]
+	const motor_max : int^2 = [255, 250]
+	const motor_constant : float = 1.0
+
+(* MATH FUNCTIONS *)
+node atan2(a,b: float) returns (c: float)
+let
+	c = a;
+tel
+
+node sin(a: float) returns (c: float)
+let
+	c = a;
+tel
+
+node cos(a: float) returns (c: float)
+let
+	c = a;
+tel
+
+node exp(a: float) returns (c: float)
+let
+	c = a;
+tel
+
+node sqrt(a: float) returns (c: float)
+let
+	c = a;
+tel
+
+
+node abs(a: float) returns (c:float)
+let
+	if int_of_float(a) > 0 then c = a else c = -.a end;
+tel
+
+node sign(a: float) returns (c: float)
+let
+	if int_of_float(a) > 0 then c = 1.0 else c = -.1.0 end;
+tel
+
+
+
+
+
+
+
+(* TRAJECTORY FUNCTION *)
+	node traj() returns (theta,d_theta,dd_theta: float)
+		let
+			theta = 0.0;
+			d_theta = 0.0 -> ((theta -. pre(theta))*. float_of_int(frequency));
+			dd_theta = 0.0 -> (d_theta -. pre(d_theta))*.float_of_int(frequency);
+		tel
+
+(* SENSING HELPER FUNCTIONS *)
+	node remapped_sensor_values(raw,sensor_num: int) returns (value: int)
+		let	
+
+			 	 if raw < sensor_min then value = 0
+			else if raw > sensor_max then value = 1000
+			else					 value = int_of_float(float_of_int(1000*(raw-sensor_min))/.float_of_int(sensor_max-sensor_min))
+			end; end;
+
+		tel
+
+
+(* SENSING FUNCTION *)
+	node sense(raw_a: float) returns (theta: float)
+		let
+			theta = atan2(g,raw_a) -- implement dynamic model to observe angle
+		tel
+
+(* COMPUTE FUNCTIONS *)
+	node pd(theta: float) returns (pidvalue: float)
+		var setpoint,a,b: float;
+			error,p,d: float;
+		let
+			(setpoint,a,b) = traj();
+			error = theta -. setpoint;
+			p = error;
+			d = 0.0 -> error -. pre(error);
+			pidvalue = kp*.p +. kd*.d;
+		tel
+
+	node error_thrust(theta: float) returns (error_thrust_diff: float)
+		var pd_out: float;
+		let
+			pd_out = pd(theta);					
+			error_thrust_diff = 0.0 -. pd_out *. (2.0*.inertia/.l);
+
+		tel
+
+	node traj_ffw() returns (ffw_traj_thrust_diff: float)
+		var theta_t,d_theta_t,dd_theta_t: float;
+		let
+			(theta_t,d_theta_t,dd_theta_t) = traj();
+			ffw_traj_thrust_diff = dd_theta_t *. (2.0*.inertia/.l);
+		tel
+
+	node grav_ffw(theta: float) returns (ffw_grav_thrust_diff: float)
+		let
+			ffw_grav_thrust_diff = 0.0 -. (2.0*.h/.l) *. (mass*.g*.sin(theta));
+		tel
+
+	node ffcontrol(theta: float) returns (ffw_thrust_diff: float)
+		let
+			ffw_thrust_diff = error_thrust(theta) +.  traj_ffw() +.  grav_ffw(theta);
+		tel
+
+	node thrust_diff_saturation(theta,thrust: float) returns (thrust_sat: float)
+		var um, r: float;
+		let
+			um = kappa*.mass*.g;
+			r = abs(thrust*.cos(theta))/.um;
+			if int_of_float(r -. alpha_sat) < 0 then thrust_sat = thrust;
+			else thrust_sat = sign(thrust) *. (1.0 -. (1.0 -. alpha_sat)*.exp((alpha_sat -. r)/.(1.0 -. alpha_sat)));
+			end;
+		tel
+
+	node interpolate(min,max: float) returns (out: float)
+		var ratio: float;
+		let
+			ratio = 0.45;		-- epsilon + beta
+			out = min +. ratio *.( max -. min);
+		tel
+
+	node optimal_thrust(thrust_diff: float) returns (u: float^2)
+		var p_min, p_max: float^2;
+			um: float;
+		let
+			if int_of_float(thrust_diff) > 0 then p_min = [0.0, thrust_diff]    -- [L,R]  u0 = R - L
+			else                    p_min = [thrust_diff, 0.0]
+			end;
+
+			p_max = [0.5*.(um -. thrust_diff), 0.5*.(um +. thrust_diff)];
+
+			u = map<<2>> interpolate(p_min,p_max);
+
+
+			um = kappa*.mass*.g;
+		tel
+
+
+(* COMPUTE FUNCTION *)
+	node compute(theta: float) returns (u: float^2)
+		var ffw, thrust_sat: float;
+		let
+			ffw = ffcontrol(theta);
+			thrust_sat = thrust_diff_saturation(theta, ffw);
+			u = optimal_thrust(thrust_sat);
+		tel
+		
+
+(* ACUTATION HELPER FUNCTIONS *)
+	node remapped_motor_values(raw_thrust: float; motor_num: int) returns (pwm: int)
+		var raw_vel, raw_vel_sq	: float;
+			min_m, 		 max_m, 
+			raw_pwm			: int;
+		let
+			raw_vel_sq = raw_thrust /. motor_constant;
+			raw_vel = sqrt(raw_vel_sq);
+			raw_pwm = pwmMax*int_of_float(raw_vel)/vMax;
+
+			min_m = motor_min.[motor_num] default motor_min[1];
+			max_m = motor_max.[motor_num] default motor_max[1];
+			
+			 if	raw_pwm>min_m  then pwm = raw_pwm;
+			else 					pwm = 0;
+			end; 
+
+
+		tel
+
+(* ACTUATION FUNCTIONS *)
+	node actuate (u: float^2) returns (pwmL,pwmR: int)
+	var pwm: int^2;
+	let
+		pwm = mapi<<2>> remapped_motor_values(u);
+		(pwmL,pwmR) = (pwm[0],pwm[1]);
+	tel
+
+(* LINE FOLLOWER *)
+	node propeller_balancer(raw_a: float) returns (pwmL,pwmR: int)
+		var theta: float;
+			u: float^2;
+		let
+			theta = sense(raw_a);
+			u = compute(theta);
+			(pwmL,pwmR) = actuate(u);
+		tel
+
+(* MAIN *)
+node main(raw_a: float;) returns (pwmL, pwmR: int)
+
+	let
+		(pwmL,pwmR) = propeller_balancer(raw_a);
+	tel

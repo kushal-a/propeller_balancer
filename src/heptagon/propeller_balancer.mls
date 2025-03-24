@@ -1,0 +1,265 @@
+open Mc_ext
+const frequency = 50
+const g = 9.800000
+const h = 90.000000
+const l = 348.000000
+const mass = 1.050000
+const inertia = 13500.000000
+const pwmMax = 100
+const vMax = 100
+const sensor_min = 214
+const sensor_max = 955
+const kp = 0.120000
+const kd = 0.000000
+const kappa = 0.700000
+const alpha_sat = 0.700000
+const motor_min = [24, 22]
+const motor_max = [255, 250]
+const motor_constant = 1.000000
+node atan2(a : float; b : float) returns (c : float)
+let
+  c = a
+tel
+
+node sin(a : float) returns (c : float)
+let
+  c = a
+tel
+
+node cos(a : float) returns (c : float)
+let
+  c = a
+tel
+
+node exp(a : float) returns (c : float)
+let
+  c = a
+tel
+
+node sqrt(a : float) returns (c : float)
+let
+  c = a
+tel
+
+node abs(a : float) returns (c : float)
+var ck : bool; c_true : float; c_false : float; v : int;
+let
+  ck = (v > 0);
+  v = Mc_ext.int_of_float(a);
+  c_true = (a when true(ck));
+  c_false = ~-.((a when false(ck)));
+  c = merge ck (false -> c_false)(true -> c_true)
+tel
+
+node sign(a : float) returns (c : float)
+var ck : bool; c_true : float; c_false : float; v : int;
+let
+  ck = (v > 0);
+  v = Mc_ext.int_of_float(a);
+  c_true = 1.000000;
+  c_false = ~-.(1.000000);
+  c = merge ck (false -> c_false)(true -> c_true)
+tel
+
+node traj returns (theta : float; d_theta : float; dd_theta : float)
+var v : bool; v_1 : float; v_2 : float; v_3 : float; v_4 : float; v_5 : bool;
+    v_6 : float; v_7 : float; v_8 : float; v_9 : float;
+let
+  dd_theta = if v_5 then 0.000000 else v_9;
+  v_9 = (v_7 *. v_8);
+  v_8 = Mc_ext.float_of_int(frequency);
+  v_7 = (d_theta -. v_6);
+  v_6 = pre d_theta;
+  v_5 = true fby false;
+  d_theta = if v then 0.000000 else v_4;
+  v_4 = (v_2 *. v_3);
+  v_3 = Mc_ext.float_of_int(frequency);
+  v_2 = (theta -. v_1);
+  v_1 = pre theta;
+  v = true fby false;
+  theta = 0.000000
+tel
+
+node remapped_sensor_values(raw : int; sensor_num : int)
+returns (value : int)
+var ck : bool; value_true : int; value_false : int; ck_1 : bool;
+    value_false_true : int; value_false_false : int; v : int; v_10 : int;
+    v_11 : float; v_12 : float; v_13 : float;
+let
+  ck = (raw < sensor_min);
+  value_true = 0;
+  ck_1 = ((raw when false(ck)) > sensor_max);
+  value_false_true = 1000;
+  value_false_false = Mc_ext.int_of_float(v_13);
+  v_13 = (v_11 /. v_12);
+  v_12 = Mc_ext.float_of_int((sensor_max - sensor_min));
+  v_11 = Mc_ext.float_of_int(v_10);
+  v_10 = (1000 * v);
+  v = (((raw when false(ck)) when false(ck_1)) - sensor_min);
+  value_false =
+    merge ck_1 (false -> value_false_false)(true -> value_false_true);
+  value = merge ck (false -> value_false)(true -> value_true)
+tel
+
+node sense(raw_a : float) returns (theta : float)
+let
+  theta = atan2(g, raw_a)
+tel
+
+node pd(theta : float) returns (pidvalue : float)
+var d : float; p : float; error : float; b : float; a : float;
+    setpoint : float; v : bool; v_14 : float; v_15 : float; v_16 : float;
+    v_17 : float;
+let
+  pidvalue = (v_16 +. v_17);
+  v_17 = (kd *. d);
+  v_16 = (kp *. p);
+  d = if v then 0.000000 else v_15;
+  v_15 = (error -. v_14);
+  v_14 = pre error;
+  v = true fby false;
+  p = error;
+  error = (theta -. setpoint);
+  (setpoint, a, b) = traj()
+tel
+
+node error_thrust(theta : float) returns (error_thrust_diff : float)
+var pd_out : float; v : float;
+let
+  error_thrust_diff = (0.000000 -. v);
+  v = (pd_out *. ((2.000000 *. inertia) /. l));
+  pd_out = pd(theta)
+tel
+
+node traj_ffw returns (ffw_traj_thrust_diff : float)
+var dd_theta_t : float; d_theta_t : float; theta_t : float;
+let
+  ffw_traj_thrust_diff = (dd_theta_t *. ((2.000000 *. inertia) /. l));
+  (theta_t, d_theta_t, dd_theta_t) = traj()
+tel
+
+node grav_ffw(theta : float) returns (ffw_grav_thrust_diff : float)
+var v : float; v_18 : float; v_19 : float;
+let
+  ffw_grav_thrust_diff = (0.000000 -. v_19);
+  v_19 = (((2.000000 *. h) /. l) *. v_18);
+  v_18 = ((mass *. g) *. v);
+  v = sin(theta)
+tel
+
+node ffcontrol(theta : float) returns (ffw_thrust_diff : float)
+var v : float; v_20 : float; v_21 : float; v_22 : float;
+let
+  ffw_thrust_diff = (v_21 +. v_22);
+  v_22 = grav_ffw(theta);
+  v_21 = (v +. v_20);
+  v_20 = traj_ffw();
+  v = error_thrust(theta)
+tel
+
+node thrust_diff_saturation(theta : float; thrust : float)
+returns (thrust_sat : float)
+var r : float; um : float; v : float; v_23 : float; v_24 : float; ck : bool;
+    thrust_sat_true : float; thrust_sat_false : float; v_31 : float;
+    v_32 : int; v_25 : float; v_26 : float; v_27 : float; v_28 : float;
+    v_29 : float; v_30 : float;
+let
+  ck = (v_32 < 0);
+  v_32 = Mc_ext.int_of_float(v_31);
+  v_31 = (r -. alpha_sat);
+  thrust_sat_true = (thrust when true(ck));
+  thrust_sat_false = (v_25 *. v_30);
+  v_30 = (1.000000 -. v_29);
+  v_29 = ((1.000000 -. alpha_sat) *. v_28);
+  v_28 = exp(v_27);
+  v_27 = (v_26 /. (1.000000 -. alpha_sat));
+  v_26 = (alpha_sat -. (r when false(ck)));
+  v_25 = sign((thrust when false(ck)));
+  thrust_sat = merge ck (false -> thrust_sat_false)(true -> thrust_sat_true);
+  r = (v_24 /. um);
+  v_24 = abs(v_23);
+  v_23 = (thrust *. v);
+  v = cos(theta);
+  um = ((kappa *. mass) *. g)
+tel
+
+node interpolate(min : float; max : float) returns (out : float)
+var ratio : float; v : float; v_33 : float;
+let
+  out = (min +. v_33);
+  v_33 = (ratio *. v);
+  v = (max -. min);
+  ratio = 0.450000
+tel
+
+node optimal_thrust(thrust_diff : float) returns (u : float^2)
+var um : float; p_max : float^2; p_min : float^2; v_34 : float; v_35 : float;
+    v_36 : float; v_37 : float; ck : bool; p_min_true : float^2;
+    p_min_false : float^2; v : int;
+let
+  um = ((kappa *. mass) *. g);
+  u = (map (interpolate())<<2>>)(())(p_min, p_max);
+  p_max = [v_35; v_37];
+  v_37 = (0.500000 *. v_36);
+  v_36 = (um +. thrust_diff);
+  v_35 = (0.500000 *. v_34);
+  v_34 = (um -. thrust_diff);
+  ck = (v > 0);
+  v = Mc_ext.int_of_float(thrust_diff);
+  p_min_true = [0.000000; (thrust_diff when true(ck))];
+  p_min_false = [(thrust_diff when false(ck)); 0.000000];
+  p_min = merge ck (false -> p_min_false)(true -> p_min_true)
+tel
+
+node compute(theta : float) returns (u : float^2)
+var thrust_sat : float; ffw : float;
+let
+  u = optimal_thrust(thrust_sat);
+  thrust_sat = thrust_diff_saturation(theta, ffw);
+  ffw = ffcontrol(theta)
+tel
+
+node remapped_motor_values(raw_thrust : float; motor_num : int)
+returns (pwm : int)
+var raw_pwm : int; max_m : int; min_m : int; raw_vel_sq : float;
+    raw_vel : float; v : int; v_38 : int; v_39 : int; v_40 : int; ck : bool;
+    pwm_true : int; pwm_false : int;
+let
+  ck = (raw_pwm > min_m);
+  pwm_true = (raw_pwm when true(ck));
+  pwm_false = 0;
+  pwm = merge ck (false -> pwm_false)(true -> pwm_true);
+  max_m = motor_max[motor_num] default v_40;
+  v_40 = motor_max[1];
+  min_m = motor_min[motor_num] default v_39;
+  v_39 = motor_min[1];
+  raw_pwm = (v_38 / vMax);
+  v_38 = (pwmMax * v);
+  v = Mc_ext.int_of_float(raw_vel);
+  raw_vel = sqrt(raw_vel_sq);
+  raw_vel_sq = (raw_thrust /. motor_constant)
+tel
+
+node actuate(u : float^2) returns (pwmL : int; pwmR : int)
+var pwm : int^2; v : int; v_41 : int;
+let
+  pwmR = v_41;
+  pwmL = v;
+  v_41 = pwm[1];
+  v = pwm[0];
+  pwm = (mapi (remapped_motor_values())<<2>>)(())(u)
+tel
+
+node propeller_balancer(raw_a : float) returns (pwmL : int; pwmR : int)
+var u : float^2; theta : float;
+let
+  (pwmL, pwmR) = actuate(u);
+  u = compute(theta);
+  theta = sense(raw_a)
+tel
+
+node main(raw_a : float) returns (pwmL : int; pwmR : int)
+let
+  (pwmL, pwmR) = propeller_balancer(raw_a)
+tel
+

@@ -1,0 +1,2 @@
+val fun int_of_float(a:float) returns (o:int)
+val fun float_of_int(a:int) returns (o:float)
