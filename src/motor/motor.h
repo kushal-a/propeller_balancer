@@ -1,6 +1,7 @@
 #include <Servo.h>
+#include <Arduino.h>
 
-extern Servo[2] motors;
+extern Servo motors[2];
 
 void callibrate_motors();
 void init_motors();

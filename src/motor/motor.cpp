@@ -1,7 +1,7 @@
 #include "motor.h"
-#include "../propeller_balancer.h"
+#include "propeller_balancer.h"
 
-Servo[2] motors;
+Servo motors[2];
 
 #define MAX_SIGNAL 2000
 #define MIN_SIGNAL 1000
@@ -10,7 +10,7 @@ void callibrate_motor(int motorNum){
 
     Serial.print("Now writing maximum output: (");Serial.print(MAX_SIGNAL);Serial.print(" us in this case)");Serial.print("\n");
     Serial.println("Turn on power source, then wait 2 seconds and press any key.");
-    motor[motorNum].writeMicroseconds(MAX_SIGNAL);
+    motors[motorNum].writeMicroseconds(MAX_SIGNAL);
   
     // Wait for input
     while (!Serial.available());
@@ -20,19 +20,39 @@ void callibrate_motor(int motorNum){
     Serial.println("\n");
     Serial.println("\n");
     Serial.print("Sending minimum output: (");Serial.print(MIN_SIGNAL);Serial.print(" us in this case)");Serial.print("\n");
-    motor[motorNum].writeMicroseconds(MIN_SIGNAL);
+    motors[motorNum].writeMicroseconds(MIN_SIGNAL);
     Serial.println("The ESC is calibrated");
     Serial.println("----");
-    Serial.println("Now, type a values between 1000 and 2000 and press enter");
-    Serial.println("and the motor will start rotating.");
-    Serial.println("Send 1000 to stop the motor and 2000 for full throttle");
-  
 }
 
+// void callibrate_motors(){
+//     init_motors();
+//     callibrate_motor(0);
+//     delay(2000);
+//     callibrate_motor(1);
+// }
+
 void callibrate_motors(){
-    init_motors();
-    motor_callibrate(0);
-    motor_callibrate(1);
+    Serial.print("Now writing maximum output: (");Serial.print(MAX_SIGNAL);Serial.print(" us in this case)");Serial.print("\n");
+    Serial.println("Turn on power source, then wait 2 seconds and press any key.");
+    motors[0].writeMicroseconds(MAX_SIGNAL);
+    delay(1000);
+    motors[1].writeMicroseconds(MAX_SIGNAL);
+    // Wait for input
+    while (!Serial.available());
+    Serial.read();
+  
+    // Send min output
+    Serial.println("\n");
+    Serial.println("\n");
+    delay(2000);
+    Serial.print("Sending minimum output: (");Serial.print(MIN_SIGNAL);Serial.print(" us in this case)");Serial.print("\n");
+    motors[0].writeMicroseconds(MIN_SIGNAL);
+    delay(1000);
+    motors[1].writeMicroseconds(MIN_SIGNAL);
+    delay(5000);
+    Serial.println("The ESC is calibrated");
+    Serial.println("----");
 }
 
 Servo init_motor(int pin){
@@ -48,7 +68,8 @@ void init_motors(){
     analogWriteFrequency(MOTOR_L, ESC_FREQ);
     analogWriteFrequency(MOTOR_R, ESC_FREQ);
 
-    motors = [init_motor(MOTOR_L),init_motor(MOTOR_R)];
+    motors[0] = init_motor(MOTOR_L);
+    motors[1] = init_motor(MOTOR_R);
 }
 
 void write_speed(int motorNum, int speed){
