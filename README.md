@@ -8,7 +8,7 @@ The mechanical parts of the project include a semi-circular cylinder on the bott
 1. Teensy 4.1 microcontroller
 2. MPU 6050 IMU sensor for acceleration and gyrometry data
 3. 30A BLDC ESC (x2)
-4. CC3D BEC/Z Power Distribution Board
+4. CC3D BEC (Battery Eliminator Circuit) /Z Power Distribution Board
 
 ## Connections
 A 10 row port is installed in the hood of the bot. The schematic is shown below.
@@ -54,16 +54,22 @@ TODO
 ## Setting us ESC
 
 ### Power and communication
-ESC required a 12V input. Connect the two input wires of the ESC with the power supply. ESC provides 3 phase output for motor control; connect the 3 output wires to the motor. It also provides a 5V output (and GND) and takes in a throttle input via jumpers. Ensure to connect the ground of the ESC(s) (and IMU) and microcontroller. The 5V supply of the ESC is unrellibale and hence not used. Throttle is provided as a PWM signal.
+ESC required a 12V input. Connect the two input wires of the ESC with the power supply. ESC provides 3 phase output for motor control; connect the 3 output wires to the motor. It also provides a 5V output (and GND) and takes in a throttle input via jumpers. Ensure to connect the ground of the ESC(s) (and IMU) and microcontroller. The 5V supply of the ESC is unrellibale and hence not used. Throttle is provided as a PWM signal. Speed is proportional to the width of the PWM pulse.
 
 ### Software
-A BLDC motor with a ESC taking pWM input essentially acts like a servo motor and hence the standard `Servo.h` library is used for producing the PWM. `src/motor` directory has source code for running the motor. Import `src/motor/motor.h` for access to motor functionality. The library provides access to functions to directly produce required PWM signal.
+A BLDC motor with a ESC taking PWM input essentially acts like a servo motor and hence the standard `Servo.h` library is used for producing the PWM. `src/motor` directory has source code for running the motor. Import `src/motor/motor.h` for access to motor functionality. The library provides access to functions to directly produce required PWM signal.
+
+50Hz PWM has is a 20ms period. 
+| Duration of high signal per period | Effect in Servo | Effect in BLDC |
+| :-----| :----: | :----: |
+|1ms|0 degrees|min RPM|
+|2ms| 180 degrees|max RPM|
 
 ### Callibration 
-TODO
+Every ESC has to caallibrated. The input PWM frequency can vary from 50-60Hz and min max pulse width can vary about 1ms and 2ms respectively. 
 
 ## Using the Power Distribution Board
-The power distribution board needs a 12V supply. Adjacent to the spots for the voltage input are connected the 12V output to the ESC. On the other end, the 5V terminals will be used to power the microcontroller.
+The power distribution board needs a 12V supply. Adjacent to the spots for 12V supply to the ESC. These lines are shorted. On the other end, the 5V terminals will be used to power the microcontroller. The power distribution board has a battery eliminator circuit (BEC) to eliminated the need of a seperate battery for the microcontroller.
 
 # Resources
 [1] Teensy KiCAD footprint @ https://github.com/XenGi/teensy.pretty
