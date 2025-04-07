@@ -55,7 +55,7 @@ void gyro_signals(void) {
   }
 
 
-void imu_init(){
+void init_imu(){
     Wire.setClock (400000);  //specification on mcu6050
     Wire.begin();
     delay(250);

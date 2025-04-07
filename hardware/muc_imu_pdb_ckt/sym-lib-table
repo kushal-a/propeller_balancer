@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "teensy")(type "Legacy")(uri "D:/BTech IITB/BTP/teensy_library/teensy.lib")(options "")(descr ""))
+)
