@@ -54,4 +54,8 @@ Checking variability of thrust and current by varying speed of motor-propeller s
 
     The quadratic and linear part have significant contribution to the calculated value. The constant contributed to <10\% of the calculated value.
 
+### repeating Test 3 with higher amperage power supply
 
+Acrylic broke and the motor flew in air. Luckily the wire came loose and the motor stopped.
+
+DO NOT USE MOTOR WITH speed > 30% !!!!!
