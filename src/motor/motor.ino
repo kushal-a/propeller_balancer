@@ -11,12 +11,13 @@ void setup() {
     Serial.begin(9600);
 
     init_motors(); 
-    // callibrate_motors(); // includes init
+    // callibrate_motors(); 
+    callibrate_motor(0);
 
     delay(2000);
 
 }
-
+// 123 1    11 1_
 void loop() {
 
   while (!Serial.available());
@@ -24,9 +25,12 @@ void loop() {
   
   if (v>0){
       Serial.println(v);
-      int vel[2] = {v,v};
+      int vel[2] = {v,0};
       write_speeds(vel); // in %
       delay(2000);
+  }
+  else if (v==-1) {
+    callibrate_motors();
   }
 
 }

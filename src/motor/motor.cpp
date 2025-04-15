@@ -40,7 +40,7 @@ void callibrate_motors(){
     motors[1].writeMicroseconds(MAX_SIGNAL);
     // Wait for input
     while (!Serial.available());
-    Serial.read();
+    Serial.println(Serial.read());
   
     // Send min output
     Serial.println("\n");
