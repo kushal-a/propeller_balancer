@@ -1,3 +1,22 @@
+# 24/04
+Increased hole size of propeller from 5mm dia to 6mm dia for almost a bit more than half the length from the bottom. This was used for mounting. Cut holes in the center of the motor mounts to give space for the recess part of the shaft coming out of the motor. Assembled the new propellers, base with countersunk holes, motor mounts and endstops
+
+# 23/04
+
+Made countersunk holes in the base and laser cut the supports at Microfactory
+
+# 22/04 
+
+Debugged code for compillation. Received propeller.
+
+# 19/04
+
+Checked for proper propeller size required. Sourced from Amazon. Propeller bought - 6045 
+
+# 17/04
+
+Met with professor for changing the propeller size. Shifting focus to rudimentary implementation at priority
+
 # 15/04
 
 ## Testing of motor to get motor constant
