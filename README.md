@@ -68,6 +68,8 @@ A BLDC motor with a ESC taking PWM input essentially acts like a servo motor and
 ### Callibration 
 Every ESC has to caallibrated. The input PWM frequency can vary from 50-60Hz and min max pulse width can vary about 1ms and 2ms respectively. 
 
+For some reason the callibration of both motors simulataneously by code 
+
 ## Using the Power Distribution Board
 The power distribution board needs a 12V supply. Adjacent to the spots for 12V supply to the ESC. These lines are shorted. On the other end, the 5V terminals will be used to power the microcontroller. The power distribution board has a battery eliminator circuit (BEC) to eliminated the need of a seperate battery for the microcontroller.
 
@@ -81,3 +83,5 @@ The power distribution board needs a 12V supply. Adjacent to the spots for 12V s
 [2] __Mechatronics Lab__, IIT Bombay for workspace and technological support. __Mr. Tejas__ and __Mr. Vijay__ from Mechatronics Lab.
 
 [3] Members of __INDUS Lab__, IIT Bombay for their support.
+
+[4] __Microfactory__, IIT Bombay with machinary support.

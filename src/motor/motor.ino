@@ -12,7 +12,7 @@ void setup() {
 
     init_motors(); 
     // callibrate_motors(); 
-    callibrate_motor(0);
+    // callibrate_motor(0);
 
     delay(2000);
 
@@ -25,7 +25,7 @@ void loop() {
   
   if (v>0){
       Serial.println(v);
-      int vel[2] = {v,0};
+      int vel[2] = {0,v};
       write_speeds(vel); // in %
       delay(2000);
   }
