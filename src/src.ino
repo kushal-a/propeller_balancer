@@ -19,9 +19,9 @@ void loop(){
 
     // COMPUTE
     error = Theta - traj;
-    f_diff = grav_force_diff();
+    // f_diff = grav_force_diff();
     f_diff = pid_force_diff(timer, error);
-    f_diff = net_force_diff(timer, error);
+    // f_diff = net_force_diff(timer, error);
 
     u = [0,f_diff];
 
