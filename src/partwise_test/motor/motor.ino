@@ -12,7 +12,7 @@ void setup() {
 
     init_motors(); 
     // callibrate_motors(); 
-    // callibrate_motor(0);
+    callibrate_motor(1);
 
     delay(2000);
 

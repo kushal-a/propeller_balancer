@@ -1,5 +1,5 @@
-#include "imu/imu.h"
-#include "motor/motor.h"
+#include "imu.h"
+#include "motor.h"
 
 // PINS
 #define MOTOR_L 14
@@ -32,6 +32,7 @@
 #define ALPHA2 0.7          // fraction of max control input after which saturation kicks in 
 
 // PID
+extern int pid_P;
 extern int pid_I;
 extern int pid_D;
 extern int pid_last_e;
@@ -47,5 +48,6 @@ int pid(int error);
 int grav_force_diff();
 int pid_force_diff(int timer, int error);
 int net_force_diff(int timer, int error);
-int* actuate_motors(float* thrusts);
+void actuate_motors(float* thrusts);
+void actuate_motors(float* thrusts, int* vel);
 
