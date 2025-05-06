@@ -32,11 +32,11 @@
 #define ALPHA2 0.7          // fraction of max control input after which saturation kicks in 
 
 // PID
-extern int pid_P;
-extern int pid_I;
-extern int pid_D;
+extern float pid_P;
+extern float pid_I;
+extern float pid_D;
 extern int pid_last_e;
-extern int pid_dt;
+extern float pid_dt;
 extern float kp;
 extern float ki;
 extern float kd;

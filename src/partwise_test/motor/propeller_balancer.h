@@ -19,7 +19,7 @@
     #define H_COM 90        // mm       -- height of COM above gorund in upright position
     #define INERTIA 0.005   // Kg/m^2   -- Inertia about COM
     #define MASS 1.05       // Kg       -- Mass
-    #define KF              // in       -- Thrust constant of propellers
+    #define KF 1            // in       -- Thrust constant of propellers
 
     // ESC
     #define ESC_FREQ 50     // in Hz
@@ -32,6 +32,7 @@
 #define ALPHA2 0.7          // fraction of max control input after which saturation kicks in 
 
 // PID
+extern int pid_P;
 extern int pid_I;
 extern int pid_D;
 extern int pid_last_e;
@@ -42,6 +43,11 @@ extern float kd;
 
 
 void init_devices();
-
-
+int run_pid(int timer, int error);
+int pid(int error);
+int grav_force_diff();
+int pid_force_diff(int timer, int error);
+int net_force_diff(int timer, int error);
+void actuate_motors(float* thrusts);
+void actuate_motors(float* thrusts, int* vel);
 

@@ -1,15 +1,13 @@
 #include "propeller_balancer.h"
 #include <math.h>
 
-int pid_P = 0;
-int pid_I = 0;
-int pid_D = 0;
+float pid_P = 0;
+float pid_I = 0;
+float pid_D = 0;
 int pid_last_e = 0;
-int pid_dt = 1000000000;
+float pid_dt = 0.000005;
 
 int um,alpha1,I;
-
-int null_vel[2] = {0,0};
 
 void init_consts(){
     um = KAPPA * MASS * GRAVITY;
@@ -29,12 +27,12 @@ void reset_pid(int error){
     pid_D = 0;
 
     pid_last_e = error;
-    pid_dt = 1;
+    pid_dt = 0.000005;
 }
 
 int pid(int error){
     pid_P = kp*error;
-    pid_I += ki*error;
+    pid_I += ki*error*pid_dt;
     pid_D = kd*(error-pid_last_e)/pid_dt;
     pid_last_e = error;
 
@@ -73,8 +71,8 @@ void actuate_motors(float* thrusts, int* vel){
     vel[0] = thrusts[0];
     vel[1] = thrusts[1];
 
-    if (vel[0]>30) vel[0] = 30;
-    if (vel[1]>30) vel[1] = 30;
+    // if (vel[0]>30) vel[0] = 30;
+    // if (vel[1]>30) vel[1] = 30;
     
 
     write_speeds(vel);

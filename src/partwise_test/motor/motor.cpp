@@ -9,18 +9,19 @@ Servo motors[2];
 void callibrate_motor(int motorNum){
 
     Serial.print("Now writing maximum output: (");Serial.print(MAX_SIGNAL);Serial.print(" us in this case)");Serial.print("\n");
-    Serial.println("Turn on power source, then wait 2 seconds and press any key.");
     motors[motorNum].writeMicroseconds(MAX_SIGNAL);
+    Serial.println("Turn on power source, then wait 2 seconds and press any key.");
   
     // Wait for input
     while (!Serial.available());
-    Serial.read();
+    Serial.println(Serial.read());
   
     // Send min output
     Serial.println("\n");
     Serial.println("\n");
     Serial.print("Sending minimum output: (");Serial.print(MIN_SIGNAL);Serial.print(" us in this case)");Serial.print("\n");
     motors[motorNum].writeMicroseconds(MIN_SIGNAL);
+    delay(5000);
     Serial.println("The ESC is calibrated");
     Serial.println("----");
 }
@@ -34,10 +35,10 @@ void callibrate_motor(int motorNum){
 
 void callibrate_motors(){
     Serial.print("Now writing maximum output: (");Serial.print(MAX_SIGNAL);Serial.print(" us in this case)");Serial.print("\n");
-    Serial.println("Turn on power source, then wait 2 seconds and press any key.");
     motors[0].writeMicroseconds(MAX_SIGNAL);
     delay(1000);
     motors[1].writeMicroseconds(MAX_SIGNAL);
+    Serial.println("Turn on power source, then wait 2 seconds and press any key.");
     // Wait for input
     while (!Serial.available());
     Serial.println(Serial.read());

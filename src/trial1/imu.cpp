@@ -6,7 +6,7 @@ float RateTheta;
 float AccX;
 float AccY;
 float AccZ;
-float Theta = 0; 
+float Theta; 
 
 void gyro_signals(void) {
 
