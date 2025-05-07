@@ -21,7 +21,7 @@ void init_devices(){
     init_consts();
 }
 
-void reset_pid(int error){
+void reset_pid(float error){
     pid_P = 0;
     pid_I = 0;
     pid_D = 0;
@@ -30,7 +30,7 @@ void reset_pid(int error){
     pid_dt = 0.000005;
 }
 
-int pid(int error){
+int pid(float error){
     pid_P = kp*error;
     pid_I += ki*error*pid_dt;
     pid_D = kd*(error-pid_last_e)/pid_dt;
@@ -40,7 +40,7 @@ int pid(int error){
 
 }
 
-int run_pid(int timer, int error){
+int run_pid(int timer, float error){
     if (timer == 0) reset_pid(error);
 
     return pid(error);
@@ -93,11 +93,11 @@ int grav_force_diff(){
     return -alpha1*um*sin(PI*Theta/180);
 }
 
-int pid_force_diff(int timer, int error){
+int pid_force_diff(int timer, float error){
     return (2*I/L_PP)*run_pid(timer,error);
 }
 
-int net_force_diff(int timer, int error){
+int net_force_diff(int timer, float error){
     return pid_force_diff(timer,error) + grav_force_diff();
 }
 
