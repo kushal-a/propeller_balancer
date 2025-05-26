@@ -2,7 +2,6 @@
 #include "propeller_balancer.h"
 
 Servo motors[2];
-int null_vel[2] = {0,0};
 
 #define MAX_SIGNAL 2000
 #define MIN_SIGNAL 1000
@@ -72,8 +71,6 @@ void init_motors(){
 
     motors[0] = init_motor(MOTOR_L);
     motors[1] = init_motor(MOTOR_R);
-
-    write_speeds(null_vel);
 }
 
 void write_speed(int motorNum, int speed){

@@ -1,12 +1,11 @@
-#include "imu/imu.h"
-#include "motor/motor.h"
+#include "imu.h"
 
 // PINS
 #define MOTOR_L 14
 #define MOTOR_R 15
 
-#define SDA 17
-#define SCL 16
+#define TEENSY_SDA 17
+#define TEENSY_SCL 16
 
 // HARDWARE SPECS
 
@@ -43,8 +42,8 @@ extern float kd;
 
 
 void init_devices();
-int run_pid(int timer, int error);
-int pid(int error);
+int run_pid(int timer, float error, float RateError);
+int pid(float error, float RateError);
 int grav_force_diff();
 int pid_force_diff(int timer, int error);
 int net_force_diff(int timer, int error);

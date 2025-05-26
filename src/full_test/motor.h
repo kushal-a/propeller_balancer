@@ -5,7 +5,6 @@
 #include <Arduino.h>
 
 extern Servo motors[2];
-extern int null_vel[2];
 
 void callibrate_motors();
 void init_motors();

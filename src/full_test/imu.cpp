@@ -1,4 +1,6 @@
 #include <Wire.h>
+#include <math.h>
+#include <Arduino.h>
 #include "imu.h"
 
 float RateTheta;
